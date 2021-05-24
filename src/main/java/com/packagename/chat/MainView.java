@@ -58,7 +58,7 @@ public class MainView extends VerticalLayout {
     	setDefaultHorizontalComponentAlignment(Alignment.CENTER);
     	setSizeFull(); 
     	addClassName("main-view");
-    	H1 header = new H1("CryptoEmail123");
+    	H1 header = new H1("CryptoEmail");
     	header.getElement().getThemeList().add("dark");
     	add(header);
     	askUsername();
