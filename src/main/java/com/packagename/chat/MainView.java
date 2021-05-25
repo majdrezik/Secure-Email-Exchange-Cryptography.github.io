@@ -3,10 +3,12 @@ package com.packagename.chat;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.login.LoginForm;
@@ -18,6 +20,7 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.VaadinRequest;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.UnicastProcessor;
@@ -39,18 +42,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 @SuppressWarnings("serial")
 @Route("")
 @Push
-@PWA(name = "MajdChat",
-        shortName = "MajdChat",
-        description = "This is a simple chatroom.",
+@PWA(name = "CryptoEmail",
+        shortName = "CryptoEmail",
+        description = "This is a simple Email Exchange App.",
         enableInstallPrompt = false)
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @StyleSheet("frontend://styles/shared-styles.css")
 public class MainView extends VerticalLayout {
 
-	private String username;
+	
+
 	private UnicastProcessor<ChatMessage> publisher;
 	private Flux<ChatMessage> messages;
+    public String _from, _to, _cc, _subject, _body, username;
+	User user1 = new User("user1","123");
+	User user2 = new User("user2","123");
+    
+    
+    
+    
+    
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    
     
     public MainView(UnicastProcessor<ChatMessage> publisher, Flux<ChatMessage> messages) {
     	this.publisher = publisher;
@@ -65,88 +82,71 @@ public class MainView extends VerticalLayout {
     }
 
 	
-    
-    
-    
+ 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     
     
     
     private void askUsername() {
 		HorizontalLayout usernameLayout = new HorizontalLayout();
-		User user = new User("majd_rezik","majd123");
 
-		// NEW LOGIN
+		
 		
 		LoginForm component = new LoginForm();
 		component.addLoginListener(e -> {
-			String username = e.getUsername();
-			String password = e.getPassword();
-		    boolean isAuthenticated = username.equals(user.getUserName()) && password.equals(user.getPassword());
-		    if (isAuthenticated) {
-				remove(usernameLayout);
-		        showChat();
-		    } else {
-		        component.setError(true);
-		    }
+		username = e.getUsername();
+		String password = e.getPassword();
+		boolean isUserFound, isPasswordRight =false, isAuthenticated;
+	   isUserFound = username.equalsIgnoreCase(user1.getUserName()) || username.equalsIgnoreCase(user2.getUserName()) ? true : false;
+	   
+	   if(isUserFound) {
+		   if(username.equals(user1.getUserName())) {
+			   isPasswordRight = password.equalsIgnoreCase(user1.getPassword()) ? true : false;
+		   } else {
+			   isPasswordRight = password.equalsIgnoreCase(user2.getPassword()) ? true : false;
+		   }
+	   }
+	   isAuthenticated = isUserFound && isPasswordRight;
+	    if (isAuthenticated) {
+			remove(usernameLayout);
+	        showChat();
+	    } else {
+	        component.setError(true);
+	    }
 		});
 
 		add(component);
 		
 		usernameLayout.add(component);
-		
-
-		//
-		
-	
-		/*
-		TextField usernameField = new TextField();
-		PasswordField password = new PasswordField("Password");
-		
-		usernameField.setPlaceholder("Username");
-		password.setPlaceholder("Password");
-		
-		usernameField.focus();
-		Button startButton = new Button("Login");
-		
-		usernameField.setRequired(true);
-		password.setRequired(true);
-
-		usernameLayout.add(usernameField);
-		usernameLayout.add(password);
-		usernameLayout.add(startButton);
-		
-		startButton.addClickListener(click -> {
-			username = usernameField.getValue();
-			User majd = new User("majd_rezik","majd123");
-			if(usernameField.getValue().equals(majd.getUserName()) && password.getValue().equals(majd.getPassword())) {
-				remove(usernameLayout);
-				showChat();
-			}else {
-				
-			}
-		});
-		
-		*/
 		add(usernameLayout);
 	}
 
+    
+    
+    
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    
+    
 	private void showChat() {
 		MessageList messageList = new MessageList();
 		add(messageList,createInputLayout());
 		expand(messageList);
 		
-		//TO ENABLE MULTI USERS AT THE SAME TIME.
-		//lock the UI
-		/*
-		messages.subscribe(message -> {
+				messages.subscribe(message -> {
 			getUI().ifPresent(ui -> 
 				ui.access(()->	//The thing that takes in the runnable
-					messageList.add(new Paragraph(
-							message.getFrom() + ": " + message.getMessage()
-							))
+					messageList.add("\n" + 
+							"From : " + message.getFrom() + "  ||  To : " + message.getTo() + "  ||  Cc : "+ message.getCc() + "  ||  Subject : " + message.getSubject() + "  ||  Body : "+ message.getBody()
+							)
 					));
 		});
-		*/
+		
 	}
 
 	/**
@@ -154,11 +154,11 @@ public class MainView extends VerticalLayout {
 	 */
 	private Component createInputLayout() {
 		HorizontalLayout inputLayout = new HorizontalLayout();
-		inputLayout.setWidth("100%");
+		inputLayout.setWidth("50%");
 		
-		//TextField messageField = new TextField();
 
-		TextField from = new TextField("From");
+
+
 		TextField to = new TextField("To");
 		TextField cc = new TextField("Cc");
 		TextField subject = new TextField("Subject");
@@ -168,7 +168,7 @@ public class MainView extends VerticalLayout {
 		
 
 		
-		from.setPlaceholder("From");
+
 		
 		to.setPlaceholder("To");
 		cc.setPlaceholder("Cc");
@@ -178,7 +178,7 @@ public class MainView extends VerticalLayout {
 		Button sendButton = new Button("Send");
 		sendButton.getElement().getThemeList().add("primary");
 		
-        vertical.add(from);
+
         vertical.add(to);
         vertical.add(cc);
         vertical.add(subject);
@@ -191,18 +191,47 @@ public class MainView extends VerticalLayout {
         inputLayout.add(vertical);
 		inputLayout.expand(body);
 		
-		from.focus();
+		to.focus();
 		
 		sendButton.addClickListener(click -> {
-			publisher.onNext(new ChatMessage(username, body.getValue()));
-			body.clear(); //clear the message field and get back the placeholder.
-			to.clear();
-			cc.clear();
-			subject.clear();
-			to.focus(); //focus on message field so the user can continue typing.
+			
+			_from = "\n" + username + "\n";
+			_to = to.getValue() + "\n";
+			_cc = cc.getValue ()+ "\n";
+			_subject = subject.getValue() + "\n";
+			_body = body.getValue() + "\n";
+			
+			boolean isUserValid;
+			
+			
+			isUserValid = _to.equalsIgnoreCase(user1.getUserName()) || _to.equalsIgnoreCase(user2.getUserName()) ? true : false;
+			
+			//if the reciever-user is not found, show a dialog box and dont show the email in the sent emails.
+			if(!isUserValid) {
+				Dialog dialog = new Dialog();
+				dialog.add(new Text("The user you are trying to reach, is not found.\n Close me with the esc-key or an outside click"));
+				dialog.setWidth("400px");
+				dialog.setHeight("150px");
+				dialog.open();
+				body.clear(); //clear the message field and get back the placeholder.
+				to.clear();
+				cc.clear();
+				subject.clear();
+				to.focus(); //focus on message field so the user can continue typing.
+			}
+			else{
+				publisher.onNext(new ChatMessage(_from, _to, _cc,_subject,_body));
+				body.clear(); //clear the message field and get back the placeholder.
+				to.clear();
+				cc.clear();
+				subject.clear();
+				to.focus(); //focus on message field so the user can continue typing.
+			}
 		});
 		to.focus(); //focus on message field so the user can continue typing.
 
 		return inputLayout;
 	}
+	
+	
 }
