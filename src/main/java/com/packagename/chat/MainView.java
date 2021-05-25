@@ -14,6 +14,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -173,7 +174,7 @@ public class MainView extends VerticalLayout {
     
 	private void showChat() {
 		
-		HorizontalLayout inputLayout = new HorizontalLayout();
+		//HorizontalLayout inputLayout = new HorizontalLayout();
 
 		Button logOutButton = new Button("Log out");
 		logOutButton.getElement().getThemeList().add("primary");
@@ -184,11 +185,11 @@ public class MainView extends VerticalLayout {
 		MessageList messageList = new MessageList();
 		messageList.setWidth("100%");
 		messageList.setHeight("100%");
-	//	mainLayout.add(messageList);
 
+		VerticalLayout vertical = new VerticalLayout();
 		
-		//inputLayout.add(messageList,createInputLayout(),logOutButton);
-		//add(inputLayout);
+		
+		
 		expand(messageList); 
 		
 				messages.subscribe(message -> {
@@ -208,9 +209,14 @@ public class MainView extends VerticalLayout {
 			askUsername();
 		});
 		
-		//inputLayout.add(messageList);
-		//mainLayout.add(inputLayout	);
-		mainLayout.add(messageList,createInputLayout(),logOutButton);
+		VerticalLayout ver = new VerticalLayout();
+		ver.setWidth("10%");
+		ver.add( new Span(username), logOutButton);
+		mainLayout.add(messageList,createInputLayout(), ver);
+
+		//mainLayout.add(messageList,createInputLayout(), logOutButton);
+		//mainLayout.add(new Span(username));
+
 		add(mainLayout);
 
 	}
