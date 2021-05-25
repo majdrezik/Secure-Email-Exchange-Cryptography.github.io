@@ -25,6 +25,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.UnicastProcessor;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,10 +58,11 @@ public class MainView extends VerticalLayout {
 
 	private UnicastProcessor<ChatMessage> publisher;
 	private Flux<ChatMessage> messages;
-    public String _from, _to, _cc, _subject, _body, username;
+    public String _from, _to, _cc, _subject, _body, username, time;
 	User user1 = new User("user1","123");
 	User user2 = new User("user2","123");
-    
+    HorizontalLayout layout = new HorizontalLayout();
+
     
     
     
@@ -72,6 +76,7 @@ public class MainView extends VerticalLayout {
     public MainView(UnicastProcessor<ChatMessage> publisher, Flux<ChatMessage> messages) {
     	this.publisher = publisher;
     	this.messages = messages;
+    	layout.setWidth("100%");
     	setDefaultHorizontalComponentAlignment(Alignment.CENTER);
     	setSizeFull(); 
     	addClassName("main-view");
@@ -93,8 +98,6 @@ public class MainView extends VerticalLayout {
     private void askUsername() {
 		HorizontalLayout usernameLayout = new HorizontalLayout();
 
-		
-		
 		LoginForm component = new LoginForm();
 		component.addLoginListener(e -> {
 		username = e.getUsername();
@@ -132,21 +135,33 @@ public class MainView extends VerticalLayout {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     
+    String getTime() {
+    	SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss");
+    	Date date = new Date(System.currentTimeMillis());
+    	return formatter.format(date);
+    }
+    
     
 	private void showChat() {
+
 		MessageList messageList = new MessageList();
+		layout.setWidth("100%");
+		messageList.setWidth("70%");
+		messageList.setHeight("100%");
+		layout.add(messageList);
 		add(messageList,createInputLayout());
 		expand(messageList);
 		
 				messages.subscribe(message -> {
 			getUI().ifPresent(ui -> 
 				ui.access(()->	//The thing that takes in the runnable
-					messageList.add("\n" + 
-							"From : " + message.getFrom() + "  ||  To : " + message.getTo() + "  ||  Cc : "+ message.getCc() + "  ||  Subject : " + message.getSubject() + "  ||  Body : "+ message.getBody()
-							)
+					messageList.add(new Paragraph( getTime() + 
+							"  ||  From : " + message.getFrom() + "  ||  To : " + message.getTo() + 
+							"  ||  Cc : "+ message.getCc() + "  ||  Subject : " + message.getSubject() + 
+							"  ||  Body : " + message.getBody() 
+							))
 					));
 		});
-		
 	}
 
 	/**
@@ -154,9 +169,11 @@ public class MainView extends VerticalLayout {
 	 */
 	private Component createInputLayout() {
 		HorizontalLayout inputLayout = new HorizontalLayout();
-		inputLayout.setWidth("50%");
-		
+		inputLayout.setWidth("20%");
+		inputLayout.setHeight("100%");
 
+		//inputLayout.setMargin(true);
+		layout.add(inputLayout);
 
 
 		TextField to = new TextField("To");
@@ -185,49 +202,71 @@ public class MainView extends VerticalLayout {
         vertical.add(body);
         vertical.add(sendButton);
         
-        vertical.setHorizontalComponentAlignment(Alignment.STRETCH , vertical);
-        vertical.setHorizontalComponentAlignment(Alignment.CENTER, vertical);;
+       // vertical.setHorizontalComponentAlignment(Alignment.STRETCH , vertical);
+       // vertical.setHorizontalComponentAlignment(Alignment.CENTER, vertical);;
 
         inputLayout.add(vertical);
 		inputLayout.expand(body);
-		
+
+		//inputLayout.setWidth("60px");
 		to.focus();
 		
 		sendButton.addClickListener(click -> {
 			
 			_from = "\n" + username + "\n";
-			_to = to.getValue() + "\n";
+			_to = to.getValue();
 			_cc = cc.getValue ()+ "\n";
 			_subject = subject.getValue() + "\n";
 			_body = body.getValue() + "\n";
+
+			boolean isUserValid, isPopUp=false;
 			
-			boolean isUserValid;
 			
+			//isUserValid = _to.equalsIgnoreCase(user1.getUserName()) || _to.equalsIgnoreCase(user2.getUserName()) ? true : false;
+			isUserValid = _to.contains("user") ? true : false;
 			
-			isUserValid = _to.equalsIgnoreCase(user1.getUserName()) || _to.equalsIgnoreCase(user2.getUserName()) ? true : false;
-			
-			//if the reciever-user is not found, show a dialog box and dont show the email in the sent emails.
-			if(!isUserValid) {
+			if(_to.isEmpty() || _to.equals(" ") || _to.equals(null)) {
+				isPopUp = true;
 				Dialog dialog = new Dialog();
-				dialog.add(new Text("The user you are trying to reach, is not found.\n Close me with the esc-key or an outside click"));
+				dialog.add(new Text("*To* Field can't be empty.					\n Close me with the esc-key or an outside click"));
 				dialog.setWidth("400px");
 				dialog.setHeight("150px");
 				dialog.open();
-				body.clear(); //clear the message field and get back the placeholder.
-				to.clear();
-				cc.clear();
-				subject.clear();
-				to.focus(); //focus on message field so the user can continue typing.
 			}
-			else{
+			
+			
+
+			//if the reciever-user is not found, show a dialog box and dont show the email in the sent emails.
+			if(isUserValid) {
 				publisher.onNext(new ChatMessage(_from, _to, _cc,_subject,_body));
+				//clear fields
 				body.clear(); //clear the message field and get back the placeholder.
 				to.clear();
 				cc.clear();
 				subject.clear();
 				to.focus(); //focus on message field so the user can continue typing.
+				
 			}
+			else {
+				if(!isPopUp) {
+					Dialog dialog = new Dialog();
+					String error = "' " + _to + " ' is unreachable.\n Close me with the esc-key or an outside click";
+					dialog.add(error);
+					dialog.setWidth("400px");
+					dialog.setHeight("150px");
+					dialog.open();
+					
+					//clear fields
+					body.clear(); //clear the message field and get back the placeholder.
+					to.clear();
+					cc.clear();
+					subject.clear();
+					to.focus(); //focus on message field so the user can continue typing.
+				}
+			}
+			
 		});
+			
 		to.focus(); //focus on message field so the user can continue typing.
 
 		return inputLayout;

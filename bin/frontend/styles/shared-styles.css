@@ -10,17 +10,41 @@
   max-width: 250px;
 }
 
+/*
 .main-view h1{
 	width:100%;
 	margin:0;
 	padding:16px;
 }
+*/
 
+
+.main-view h1{
+	width:100%;
+	margin:0;
+	padding:0px;
+}
+
+/*
 .message-list {
 	overflow-y: scroll;
-	width:100%;
+	width:80%;
 }
 
 .mesage-list p{
-	width:100%;
+	width:80%;
+}*/
+
+
+
+.message-list {
+	overflow-y: scroll;
+	width:80%;
+	height: 100%;
 }
+
+.mesage-list p{
+	width:15%;
+}
+
+
