@@ -2,6 +2,7 @@ package com.packagename.chat;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -65,12 +66,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 @CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @StyleSheet("frontend://styles/shared-styles.css")
 public class MainView extends VerticalLayout {
-
+ 
 	
 
 	private UnicastProcessor<ChatMessage> publisher;
 	private Flux<ChatMessage> messages;
-    public String _from, _to, _cc, _subject, _body, username, time;
+    public String _from, _to, _cc, _subject, _body, username, time; // colorSentReceived;;
 	User user1 = new User("user1","123");
 	User user2 = new User("user2","123");
     HorizontalLayout mainLayout = new HorizontalLayout();
@@ -94,6 +95,8 @@ public class MainView extends VerticalLayout {
     	addClassName("main-view");
     	H1 header = new H1("CryptoEmail");
     	header.getElement().getThemeList().add("dark");
+
+    	
     	add(header);
     	askUsername();
     }
@@ -172,10 +175,36 @@ public class MainView extends VerticalLayout {
 
     
     
+    private String getToOnGUI(ChatMessage message) {
+    	if(message.getTo().equalsIgnoreCase(username))
+    		return "me";
+    	return message.getTo();
+    }
+    
+    private String getFromOnGUI(ChatMessage message) {
+    	if(message.getFrom().equalsIgnoreCase(username))
+    		return "me";
+    	return message.getFrom();
+    }
+    
+    private String getSentOrReceived(ChatMessage message) {
+    	if(message.getFrom().equalsIgnoreCase(username)) {
+//    		setColor("green");
+    		return "SENT";
+    	}
+//		setColor("blue");
+    	return "RECEIVED";
+    }
+    
+//    private void setColor(String color) {
+//    	colorSentReceived = color;
+//    	System.out.println(colorSentReceived);
+//    }
+    
+    
 	private void showChat() {
 		
 		//HorizontalLayout inputLayout = new HorizontalLayout();
-
 		Button logOutButton = new Button("Log out");
 		logOutButton.getElement().getThemeList().add("primary");
 		
@@ -185,23 +214,69 @@ public class MainView extends VerticalLayout {
 		MessageList messageList = new MessageList();
 		messageList.setWidth("100%");
 		messageList.setHeight("100%");
+		messageList.getStyle().set("max-height", "90vh");
+		messageList.getStyle().set("overflow-y", "auto");
+		messageList.getStyle().set("padding-right", "8px");
+		messageList.getStyle().set("padding-left", "8px");
 
 		VerticalLayout vertical = new VerticalLayout();
-		
-		
+
 		
 		expand(messageList); 
 		
-				messages.subscribe(message -> {
+		
+		
+		/*
+			messages.subscribe(message -> {
 			getUI().ifPresent(ui -> 
-				ui.access(()->	//The thing that takes in the runnable
-					messageList.add(new Paragraph( getTime() + 
-							"  ||  From : " + message.getFrom() + "  ||  To : " + message.getTo() + 
-							"  ||  Cc : "+ message.getCc() + "  ||  Subject : " + message.getSubject() + 
-							"  ||  Body : " + message.getBody() 
-							))
-					));
-		});	
+				ui.access(()->{
+					//The thing that takes in the runnable
+					messageList.add(
+					new Paragraph(" " + getTime()),
+					new Paragraph(" From : " + message.getFrom()),
+					new Paragraph(" To : " + message.getTo()),
+					new Paragraph(" Cc : " + message.getCc()),
+					new Paragraph(" Subject : " + message.getSubject()),
+					new Paragraph(" Body : " + message.getBody())
+					);
+					Paragraph p = new Paragraph();
+					p.getStyle().set("borderBottom", "dotted 1px black");
+					messageList.add(p);
+					messageList.add(new Html("<br>"));
+
+				}));
+			});
+				*/
+		
+		
+		
+		
+				
+		messages.subscribe(message -> {
+			getUI().ifPresent(ui -> 
+				ui.access(()->{
+					//The thing that takes in the runnable
+					messageList.add(
+							
+						new Html("<div class=\"card\" style=\"width: 18rem;\">\r\n" + 							  
+								"							  <div class=\"card-body\">\r\n" + 
+								"								<p class=\"card-title\" style= \"padding-left:20px;border-style: outset;\">" + "<i><b> "+  getSentOrReceived(message) + "</b></i>" + "</p>"+
+								"								<p class=\"card-text\" style= \"padding-left:20px\"> " + getTime() + "</p>" + 
+								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getSubject() + "</h4>\r\n"  +
+								"								 <p class=\"card-text\"style= \"padding-left:20px\">From: " + getFromOnGUI(message) + "</p>\r\n" + 
+								"							    <p class=\"card-text\"style= \"padding-left:20px\">To: " + getToOnGUI(message) + "</p>\r\n" + 
+								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getBody() + "</h4>\r\n"  +
+								"							  </div>\r\n" + 
+								"							</div>")
+			
+					);
+					Paragraph p = new Paragraph();
+					p.getStyle().set("borderBottom", "dotted 1px black");
+					
+					messageList.add(p);
+					messageList.add(new Html("<br>"));
+				}));
+			});
 				
 		logOutButton.addClickListener(click -> {
 			remove(mainLayout);
@@ -211,7 +286,9 @@ public class MainView extends VerticalLayout {
 		
 		VerticalLayout ver = new VerticalLayout();
 		ver.setWidth("10%");
-		ver.add( new Span(username), logOutButton);
+		//ver.add( new Html("<h3>" + username + "</h3"), logOutButton);
+		
+		ver.add(new Html("<h3>" + username + "</h3>") , logOutButton);
 		mainLayout.add(messageList,createInputLayout(), ver);
 
 		//mainLayout.add(messageList,createInputLayout(), logOutButton);
@@ -238,7 +315,7 @@ public class MainView extends VerticalLayout {
 		
 
 		TextField to = new TextField("To");
-		TextField cc = new TextField("Cc");
+		//TextField cc = new TextField("Cc");
 		TextField subject = new TextField("Subject");
 		TextField body = new TextField("Body");
 
@@ -247,7 +324,7 @@ public class MainView extends VerticalLayout {
 		
 		
 		to.setPlaceholder("To");
-		cc.setPlaceholder("Cc");
+	//	cc.setPlaceholder("Cc");
 		subject.setPlaceholder("Subject");
 		body.setPlaceholder("Body");
 
@@ -256,12 +333,12 @@ public class MainView extends VerticalLayout {
 		
 		
 		to.setWidth("100%");
-		cc.setWidth("100%");
+		//cc.setWidth("100%");
 		subject.setWidth("100%");
 		body.setWidth("100%");
 		
         vertical.add(to);
-        vertical.add(cc);
+      //  vertical.add(cc);
         vertical.add(subject);
         vertical.add(body);
         vertical.add(sendButton);
@@ -279,11 +356,11 @@ public class MainView extends VerticalLayout {
 			
 			_from = username;
 			_to = to.getValue();
-			_cc = cc.getValue ()+ "\n";
+		//	_cc = cc.getValue ()+ "\n";
 			_subject = subject.getValue() + "\n";
 			_body = body.getValue() + "\n";
 
-			boolean isUserValid = false, isPopUp=false;
+			boolean isUserValid = false, isPopUp=false, isErrorMessageChanged = false;
 			
 			
 			//isUserValid = _to.equalsIgnoreCase(user1.getUserName()) || _to.equalsIgnoreCase(user2.getUserName()) ? true : false;
@@ -292,18 +369,20 @@ public class MainView extends VerticalLayout {
 			if(_from.equalsIgnoreCase(user1.getUserName())) {
 				if(_to.equalsIgnoreCase(user2.getUserName())) {
 					isUserValid = true;
-				}else {
+				}else if( !_to.equals("") && !_to.isEmpty() && !_to.equals(" ")){
 					errorMessage += "You can only send to: ' " + user2.getUserName() + " '. Close me with the esc-key or an outside click";	
+					isErrorMessageChanged = true;
 				}
 			}else if(_from.equalsIgnoreCase(user2.getUserName())) {
 					if(_to.equalsIgnoreCase(user1.getUserName())) {
 						isUserValid = true;
-					} else {
+					} else if( !_to.equals("") && !_to.isEmpty() && !_to.equals(" ")){
 						errorMessage += "You can only send to: '" + user1.getUserName() + " '. Close me with the esc-key or an outside click";
+						isErrorMessageChanged = true;
 					}
 			}
 			
-			if(!isUserValid) {
+			if(!isUserValid && _to instanceof String && isErrorMessageChanged) {
 				isPopUp = true;
 				Dialog dialog = new Dialog();
 				dialog.add(new Text(errorMessage));
@@ -313,7 +392,7 @@ public class MainView extends VerticalLayout {
 			}
 	
 			
-			if((_to.isEmpty() || _to.equals(" ") || _to.equals(null)) && !isPopUp) {
+			if((_to.isEmpty() || _to.equals(" ") || _to.equals(null)) && !isPopUp && !isErrorMessageChanged) {
 				Dialog dialog = new Dialog();
 				dialog.add(new Text("*To* Field can't be empty.					\n Close me with the esc-key or an outside click"));
 				dialog.setWidth("400px");
@@ -329,30 +408,11 @@ public class MainView extends VerticalLayout {
 				//clear fields
 				body.clear(); //clear the message field and get back the placeholder.
 				to.clear();
-				cc.clear();
+			//	cc.clear();
 				subject.clear();
 				to.focus(); //focus on message field so the user can continue typing.
 				
-			}
-			
-			/*else {
-				if(!isPopUp) {
-					Dialog dialog = new Dialog();
-					String error = "' " + _to + " ' is unreachable.\n Close me with the esc-key or an outside click";
-					dialog.add(error);
-					dialog.setWidth("400px");
-					dialog.setHeight("150px");
-					dialog.open();
-					
-					//clear fields
-					body.clear(); //clear the message field and get back the placeholder.
-					to.clear();
-					cc.clear();
-					subject.clear();
-					to.focus(); //focus on message field so the user can continue typing.
-				}
-			}*/
-			
+			}			
 		});
 			
 		to.focus(); //focus on message field so the user can continue typing.
@@ -360,98 +420,6 @@ public class MainView extends VerticalLayout {
 		return inputLayout;
 	}
 
-	
-	
+		
 }
-	
-	
-	
-	
-	
-	   
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////						THEME 2
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	/*
-	private Component createInputLayout() {
-	
-		HorizontalLayout inputLayout = new HorizontalLayout();
-		inputLayout.setWidth("100%");
-		inputLayout.setHeight("100%");
 
-		//inputLayout.setMargin(true);
-		layout.add(inputLayout);
-
-		//added new theme
-
-		List<ChatMessage> chatList = new ArrayList<>();
-
-		chatList.add(new ChatMessage("from1", "Lucas", "Kane", "subject1","body1"));
-		chatList.add(new ChatMessage("from2", "Lucas", "Kane2", "subject2","body2"));
-		chatList.add(new ChatMessage("from3", "Lucas", "Kane3", "subject3","body3"));
-		chatList.add(new ChatMessage("from4", "Lucas", "Kane4", "subject4","body4"));
-
-		
-
-		Grid<ChatMessage> grid = new Grid<>(ChatMessage.class);
-		grid.setItems(chatList);
-
-		//grid.removeColumnByKey("id");
-
-		// The Grid<>(Person.class) sorts the properties and in order to
-		// reorder the properties we use the 'setColumns' method.
-		grid.setColumns("From", "To", "Cc", "Subject", "Body");
-		add(grid);
-		inputLayout.add(grid);
-
-		//
-	
-		
-		return inputLayout;
-	}
-
-	
-	
-	private void showChat() {
-
-		MessageList messageList = new MessageList();
-		layout.setWidth("100%");
-		messageList.setWidth("70%");
-		messageList.setHeight("100%");
-		layout.add(messageList);
-		add(messageList,createInputLayout());
-		expand(messageList);
-		
-		HorizontalLayout inputLayout = new HorizontalLayout();
-		inputLayout.setWidth("100%");
-		inputLayout.setHeight("100%");
-
-		//inputLayout.setMargin(true);
-		layout.add(inputLayout);
-
-		//added new theme
-
-		List<ChatMessage> chatList = new ArrayList<>();
-
-		chatList.add(new ChatMessage("from1", "Lucas", "Kane", "subject1","body1"));
-		chatList.add(new ChatMessage("from2", "Lucas", "Kane2", "subject2","body2"));
-		chatList.add(new ChatMessage("from3", "Lucas", "Kane3", "subject3","body3"));
-		chatList.add(new ChatMessage("from4", "Lucas", "Kane4", "subject4","body4"));
-
-		
-
-		Grid<ChatMessage> grid = new Grid<>(ChatMessage.class);
-		grid.setItems(chatList);
-		grid.setColumns("From", "To", "Cc", "Subject", "Body");
-		add(grid);
-		inputLayout.add(grid);
-		
-				/*messages.subscribe(message -> {
-			getUI().ifPresent(ui -> 
-				ui.access(()->	//The thing that takes in the runnable
-					messageList.add(grid)
-					));
-		});	*/
-				
-	
