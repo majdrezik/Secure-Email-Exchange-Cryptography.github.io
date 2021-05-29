@@ -77,3 +77,8 @@ If you run application from a command line, remember to prepend a `mvn` to the c
 
 
 ![](Pics/Login.PNG)
+
+![](Pics/Sent.PNG)
+
+![](Pics/Received.PNG)
+
