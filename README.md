@@ -78,7 +78,9 @@ If you run application from a command line, remember to prepend a `mvn` to the c
 
 ![](Pics/Login.PNG)
 
+**After sending the message from user1 to user2, this is what will be seen on user1 screen:**
 ![](Pics/Sent.PNG)
 
+**After sending the message from user1 to user2, this is what will be seen on user2 screen:**
 ![](Pics/Received.PNG)
 
