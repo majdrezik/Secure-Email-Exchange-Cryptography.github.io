@@ -323,9 +323,9 @@ public class AES {
 		return ecryptedText;
 	}
 	
-	public static byte[] decrypt(byte[] in,byte[] key){
+	public static byte[] decrypt(byte[] ecryptedText,byte[] key){
 		int i;
-		byte[] tmp = new byte[in.length];
+		byte[] plainText = new byte[ecryptedText.length];
 		byte[] bloc = new byte[16];
 		
 		
@@ -335,21 +335,21 @@ public class AES {
 		w = generateSubkeys(key);
 
 
-		for (i = 0; i < in.length; i++) {
+		for (i = 0; i < ecryptedText.length; i++) {
 			if (i > 0 && i % 16 == 0) {
 				bloc = decryptBloc(bloc);
-				System.arraycopy(bloc, 0, tmp, i - 16, bloc.length);
+				System.arraycopy(bloc, 0, plainText, i - 16, bloc.length);
 			}
-			if (i < in.length)
-				bloc[i % 16] = in[i];
+			if (i < ecryptedText.length)
+				bloc[i % 16] = ecryptedText[i];
 		}
 		bloc = decryptBloc(bloc);
-		System.arraycopy(bloc, 0, tmp, i - 16, bloc.length);
+		System.arraycopy(bloc, 0, plainText, i - 16, bloc.length);
 
 
-		tmp = deletePadding(tmp);
+		plainText = deletePadding(plainText);
 
-		return tmp;
+		return plainText;
 	}
 	
 	private static byte[] deletePadding(byte[] input) {
