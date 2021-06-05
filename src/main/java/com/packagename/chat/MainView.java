@@ -32,9 +32,13 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinRequest;
 
+import DAO.AES;
+import DAO.RSAImpl;
+import DAO.Utils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.UnicastProcessor;
 
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,8 +79,9 @@ public class MainView extends VerticalLayout {
 	User user1 = new User("user1","123");
 	User user2 = new User("user2","123");
     HorizontalLayout mainLayout = new HorizontalLayout();
+    byte[] globalKey = "This is a key".getBytes();
+	public RSAImpl RSA;
 
-    
     
     
     
@@ -96,7 +101,13 @@ public class MainView extends VerticalLayout {
     	H1 header = new H1("CryptoEmail");
     	header.getElement().getThemeList().add("dark");
 
-    	
+		BigInteger p;
+        BigInteger q;
+        BigInteger e;
+		p = new BigInteger("5700734181645378434561188374130529072194886062117");
+        q = new BigInteger("35894562752016259689151502540913447503526083241413");
+        e = new BigInteger("33445843524692047286771520482406772494816708076993");
+    	RSA = new RSAImpl(p,q,e);
     	add(header);
     	askUsername();
     }
@@ -264,8 +275,8 @@ public class MainView extends VerticalLayout {
 								"								<p class=\"card-text\" style= \"padding-left:20px\"> " + getTime() + "</p>" + 
 								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getSubject() + "</h4>\r\n"  +
 								"								 <p class=\"card-text\"style= \"padding-left:20px\">From: " + getFromOnGUI(message) + "</p>\r\n" + 
-								"							    <p class=\"card-text\"style= \"padding-left:20px\">To: " + getToOnGUI(message) + "</p>\r\n" + 
-								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getBody() + "</h4>\r\n"  +
+								"							    <p class=\"card-text\"style= \"padding-left:20px\">To: " + getToOnGUI(message)  + "</p>\r\n" + 
+								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + new String(AES.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption())).getBytes())) + "</h4>\r\n"  +
 								"							  </div>\r\n" + 
 								"							</div>")
 			
@@ -401,10 +412,24 @@ public class MainView extends VerticalLayout {
 			}
 			
 			
-
+			
 			
 			if(isUserValid) {
-				publisher.onNext(new ChatMessage(_from, _to, _cc,_subject,_body));
+
+				
+
+				List<BigInteger>  RSAKeyEncryption;
+			
+				RSAKeyEncryption = RSA.encryptMessage(new String(globalKey));
+//				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), globalKey); this works!!!!!
+				
+				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), globalKey);
+				
+				publisher.onNext(new ChatMessage(_from, _to , _cc,_subject, bodyFieldEncrypted, RSAKeyEncryption));
+				
+//				publisher.onNext(new ChatMessage(_from, _to , _cc,_subject, bodyFieldEncrypted));  this works!!!!!!!
+				
+				//publisher.onNext(new ChatMessage(_from, _to, _cc,_subject,_body));
 				//clear fields
 				body.clear(); //clear the message field and get back the placeholder.
 				to.clear();

@@ -1,19 +1,32 @@
 package com.packagename.chat;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.print.attribute.standard.DateTimeAtCompleted;
 
 public class ChatMessage {
-	private String from,to,cc,subject,body;
+	private String from,to,cc,subject;
+	List<BigInteger> RSAKeyEncryption;
+	byte[] body;
 	
 	
-	public ChatMessage(String from, String to, String cc, String subject, String body) {
+	public ChatMessage(String from, String to, String cc, String subject, byte[] body, List<BigInteger> RSAKeyEncryption) {
 		this.from = from;
 		this.to = to;
 		this.cc = cc;
 		this.subject = subject;
 		this.body = body;
+		this.RSAKeyEncryption = RSAKeyEncryption;
+	}
+
+	public List<BigInteger> getRSAKeyEncryption() {
+		return RSAKeyEncryption;
+	}
+
+	public void setRSAKeyEncryption(List<BigInteger> rSAKeyEncryption) {
+		RSAKeyEncryption = rSAKeyEncryption;
 	}
 
 	public String getTo() {
@@ -40,11 +53,11 @@ public class ChatMessage {
 		this.subject = subject;
 	}
 
-	public String getBody() {
+	public byte[] getBody() {
 		return body;
 	}
 
-	public void setBody(String body) {
+	public void setBody(byte[] body) {
 		this.body = body;
 	}
 

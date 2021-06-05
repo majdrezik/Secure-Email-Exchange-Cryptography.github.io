@@ -1,4 +1,4 @@
-package com.packagename.chat;
+package DAO;
 
 public class AES {
 	
@@ -323,7 +323,7 @@ public class AES {
 		return ecryptedText;
 	}
 	
-	public static byte[] decrypt(byte[] ecryptedText,byte[] key){
+	public static byte[] ecb_decrypt(byte[] ecryptedText,byte[] key){
 		int i;
 		byte[] plainText = new byte[ecryptedText.length];
 		byte[] bloc = new byte[16];
