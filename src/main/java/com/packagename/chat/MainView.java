@@ -33,16 +33,19 @@ import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinRequest;
 
 import DAO.AES;
+import DAO.ElGamalSignatureInstance;
 import DAO.RSAImpl;
 import DAO.Utils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.UnicastProcessor;
 
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,9 +84,10 @@ public class MainView extends VerticalLayout {
     HorizontalLayout mainLayout = new HorizontalLayout();
     byte[] globalKey = "This is a key".getBytes();
 	public RSAImpl RSA;
-
+	ElGamalSignatureInstance instance; //= new ElGamalSignatureInstance();
+	private AES AESInstance = new AES();
     
-    
+    //List<User> users = new ArrayList<>();
     
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////
@@ -104,10 +108,12 @@ public class MainView extends VerticalLayout {
 		BigInteger p;
         BigInteger q;
         BigInteger e;
+        
 		p = new BigInteger("5700734181645378434561188374130529072194886062117");
         q = new BigInteger("35894562752016259689151502540913447503526083241413");
         e = new BigInteger("33445843524692047286771520482406772494816708076993");
     	RSA = new RSAImpl(p,q,e);
+    	
     	add(header);
     	askUsername();
     }
@@ -276,7 +282,7 @@ public class MainView extends VerticalLayout {
 								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getSubject() + "</h4>\r\n"  +
 								"								 <p class=\"card-text\"style= \"padding-left:20px\">From: " + getFromOnGUI(message) + "</p>\r\n" + 
 								"							    <p class=\"card-text\"style= \"padding-left:20px\">To: " + getToOnGUI(message)  + "</p>\r\n" + 
-								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + new String(AES.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption())).getBytes())) + "</h4>\r\n"  +
+								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + new String(AESInstance.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption())).getBytes())) + "</h4>\r\n"  +
 								"							  </div>\r\n" + 
 								"							</div>")
 			
@@ -415,15 +421,15 @@ public class MainView extends VerticalLayout {
 			
 			
 			if(isUserValid) {
-
+				byte[] aesKey = AESInstance.generateKey(15).getBytes();
+				List<BigInteger>  RSAKeyEncryption = RSA.encryptMessage(new String(aesKey));//aesKey
 				
-
-				List<BigInteger>  RSAKeyEncryption;
-			
-				RSAKeyEncryption = RSA.encryptMessage(new String(globalKey));
 //				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), globalKey); this works!!!!!
 				
-				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), globalKey);
+				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), aesKey);//aesKey
+				
+				//test
+				System.out.println("AES: " + new String(bodyFieldEncrypted) );
 				
 				publisher.onNext(new ChatMessage(_from, _to , _cc,_subject, bodyFieldEncrypted, RSAKeyEncryption));
 				
