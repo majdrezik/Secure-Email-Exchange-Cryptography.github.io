@@ -52,18 +52,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * A sample Vaadin view class.
- * <p>
- * To implement a Vaadin view just extend any Vaadin component and
- * use @Route annotation to announce it in a URL as a Spring managed
- * bean.
- * Use the @PWA annotation make the application installable on phones,
- * tablets and some desktop browsers.
- * <p>
- * A new instance of this class is created for every new user and every
- * browser tab/window.
- */
 @SuppressWarnings("serial")
 @Route("")
 @Push
@@ -76,31 +64,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 @StyleSheet("frontend://styles/shared-styles.css")
 public class MainView extends VerticalLayout {
 
-
-
 	private UnicastProcessor<ChatMessage> publisher;
 	private Flux<ChatMessage> messages;
-    public String _from, _to, _cc, _subject, _body, username, time; // colorSentReceived;;
+    public String _from, _to, _cc, _subject, _body, username, time;
 	User Bob = new User("Bob","123");
 	User Alice = new User("ALice","123");
     HorizontalLayout mainLayout = new HorizontalLayout();
     byte[] globalKey = "This is a key".getBytes();
 	public RSAImpl RSA;
-	ElGamalSignatureInstance instance; //= new ElGamalSignatureInstance();
-//	private AES AESInstance = new AES();
+	ElGamalSignatureInstance instance; 
 
 	//Map each user to its 'e'. to get 'n', call getN()
 	public Map<User, BigInteger> RSApublicKeys = new HashMap<>();
 	User specUser;
 	User fromUser;
-	/*
-	 * 	p = new BigInteger("5700734181645378434561188374130529072194886062117");
-    q = new BigInteger("35894562752016259689151502540913447503526083241413");
-    e = new BigInteger("33445843524692047286771520482406772494816708076993");
-	 */
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////
+//////////////////							MainView
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -115,9 +96,6 @@ public class MainView extends VerticalLayout {
     	H1 header = new H1("CryptoEmail");
     	header.getElement().getThemeList().add("dark");
 
-
-
-
     	Bob.setRSA(new BigInteger("5700734181645378434561188374130529072194886062117"),
     			new BigInteger("35894562752016259689151502540913447503526083241413"),
     			new BigInteger("33445843524692047286771520482406772494816708076993"));
@@ -126,11 +104,8 @@ public class MainView extends VerticalLayout {
     			new BigInteger("5700734181645378434561188374130529072194886062117"),
     			new BigInteger("33445843524692047286771520482406772494816708076993"));
 
-
     	RSApublicKeys.put(Bob, Bob.getE());
     	RSApublicKeys.put(Alice, Alice.getE());
-
-    	// make one instance of hash sha-256 all sign and verify from?
 
     	Bob.setElGam_q(ElGamalSignatureInstance.getQ1());
     	Bob.setElGam_a(ElGamalSignatureInstance.getA1());
@@ -140,17 +115,6 @@ public class MainView extends VerticalLayout {
     	Alice.setElGam_a(ElGamalSignatureInstance.getA2());
     	Alice.setElGamalPrivateKey(ElGamalSignatureInstance.getX2());
     	Alice.setElGamalPublicKey(ElGamalSignatureInstance.getY2());
-    	//Bob.initElGamKeys();
-    	System.out.println("Bob:\nq : " + Bob.getElGam_q());
-    	System.out.println("a : " + Bob.getElGam_a());
-    	System.out.println("x : " + Bob.getElGamalPrivateKey());
-    	System.out.println("y : " + Bob.getElGamalPublicKey());
-    	//Alice.initElGamKeys();
-    	System.out.println("Alice:\nq : " + Alice.getElGam_q());
-    	System.out.println("a : " + Alice.getElGam_a());
-    	System.out.println("x : " + Alice.getElGamalPrivateKey());
-    	System.out.println("y : " + Alice.getElGamalPublicKey());
-
 
     	add(header);
     	askUsername();
@@ -160,10 +124,8 @@ public class MainView extends VerticalLayout {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////
+//////////////////							askUsername
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 
     private void askUsername() {
@@ -214,9 +176,8 @@ public class MainView extends VerticalLayout {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////
+//////////////////								getTime
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
     String getTime() {
     	SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss");
@@ -225,11 +186,8 @@ public class MainView extends VerticalLayout {
     }
 
 
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////
+//////////////////								getToOnGUI
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -240,35 +198,54 @@ public class MainView extends VerticalLayout {
     	return message.getTo();
     }
 
+    
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////								getFromOnGUI
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    
     private String getFromOnGUI(ChatMessage message) {
     	if(message.getFrom().equalsIgnoreCase(username))
     		return "me";
     	return message.getFrom();
     }
 
+    
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////							getSentOrReceived
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     private String getSentOrReceived(ChatMessage message) {
     	if(message.getFrom().equalsIgnoreCase(username)) {
-//    		setColor("green");
     		return "SENT";
     	}
-//		setColor("blue");
     	return "RECEIVED";
     }
 
-//    private void setColor(String color) {
-//    	colorSentReceived = color;
-//    	System.out.println(colorSentReceived);
-//    }
 
+    
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////						getOtherUser
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public User getOtherUser(User user) {
     	return user.getUserName().equals(Bob.getUserName()) ? Alice : Bob;
     }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////// 						getSpecUser
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	public User getSpecUser() {
 		return (specUser = username.equals(Bob.getUserName()) ? Bob : Alice);
 	}
+
+
+	
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////// 							showChat
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 	private void showChat() {
@@ -278,7 +255,6 @@ public class MainView extends VerticalLayout {
 		logOutButton.getElement().getThemeList().add("primary");
 
 		logOutButton.setWidth("10%");
-
 
 		MessageList messageList = new MessageList();
 		messageList.setWidth("100%");
@@ -290,38 +266,9 @@ public class MainView extends VerticalLayout {
 
 		VerticalLayout vertical = new VerticalLayout();
 
-
-
 		expand(messageList);
 
 		RSA = new RSAImpl(specUser.getP(), specUser.getQ(), specUser.getE());
-
-
-		/*
-			messages.subscribe(message -> {
-			getUI().ifPresent(ui ->
-				ui.access(()->{
-					//The thing that takes in the runnable
-					messageList.add(
-					new Paragraph(" " + getTime()),
-					new Paragraph(" From : " + message.getFrom()),
-					new Paragraph(" To : " + message.getTo()),
-					new Paragraph(" Cc : " + message.getCc()),
-					new Paragraph(" Subject : " + message.getSubject()),
-					new Paragraph(" Body : " + message.getBody())
-					);
-					Paragraph p = new Paragraph();
-					p.getStyle().set("borderBottom", "dotted 1px black");
-					messageList.add(p);
-					messageList.add(new Html("<br>"));
-
-				}));
-			});
-				*/
-
-
-
-
 
 		messages.subscribe(message -> {
 			getUI().ifPresent(ui ->
@@ -342,8 +289,6 @@ public class MainView extends VerticalLayout {
 									"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getSubject() + "</h4>\r\n"  +
 									"								 <p class=\"card-text\"style= \"padding-left:20px\">From: " + getFromOnGUI(message) + "</p>\r\n" +
 									"							    <p class=\"card-text\"style= \"padding-left:20px\">To: " + getToOnGUI(message)  + "</p>\r\n" +
-	//								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + (specUser.getUserName().equals(message.getFrom()) ? _body : new String(AES.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption(), getOtherUser(specUser).getD(), getOtherUser(specUser).getN() )).getBytes()))) + "</h4>\r\n"  +
-	//"														        <h4 class=\"card-title\" style= \"padding-left:20px\">" + ((getSentOrReceived(message).equals("SENT")) ? _body : new String(AES.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption(),  recievedUser.getD(), recievedUser.getN() )).getBytes()))) + "</h4>\r\n"  +
 	"														        <h4 class=\"card-title\" style= \"padding-left:20px; color : red\">" + verifyError + "</h4>\r\n"  +								"							  </div>\r\n" +
 	"														        <h4 class=\"card-title\" style= \"padding-left:20px\">" + "\n \n" + bodyMessage + "</h4>\r\n"  +								"							  </div>\r\n" +
 									"							</div>"
@@ -366,13 +311,9 @@ public class MainView extends VerticalLayout {
 
 		VerticalLayout ver = new VerticalLayout();
 		ver.setWidth("10%");
-		//ver.add( new Html("<h3>" + username + "</h3"), logOutButton);
 
 		ver.add(new Html("<h3>" + username + "</h3>") , logOutButton);
 		mainLayout.add(messageList,createInputLayout(), ver);
-
-		//mainLayout.add(messageList,createInputLayout(), logOutButton);
-		//mainLayout.add(new Span(username));
 
 		add(mainLayout);
 
@@ -381,10 +322,8 @@ public class MainView extends VerticalLayout {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////
+////////////////// 						createInputLayout
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 
 	private Component createInputLayout() {
@@ -392,19 +331,13 @@ public class MainView extends VerticalLayout {
 		inputLayout.setWidth("50%");
 		inputLayout.setHeight("100%");
 
-
-
 		TextField to = new TextField("To");
-		//TextField cc = new TextField("Cc");
 		TextField subject = new TextField("Subject");
 		TextField body = new TextField("Body");
 
 		VerticalLayout vertical = new VerticalLayout();
 
-
-
 		to.setPlaceholder("To");
-	//	cc.setPlaceholder("Cc");
 		subject.setPlaceholder("Subject");
 		body.setPlaceholder("Body");
 
@@ -413,38 +346,29 @@ public class MainView extends VerticalLayout {
 
 
 		to.setWidth("100%");
-		//cc.setWidth("100%");
 		subject.setWidth("100%");
 		body.setWidth("100%");
 
         vertical.add(to);
-      //  vertical.add(cc);
+
         vertical.add(subject);
         vertical.add(body);
         vertical.add(sendButton);
 
-       // vertical.setHorizontalComponentAlignment(Alignment.STRETCH , vertical);
-       // vertical.setHorizontalComponentAlignment(Alignment.CENTER, vertical);;
         vertical.setWidth("100%");
         inputLayout.add(vertical);
-		//inputLayout.expand(body);
 
-		//inputLayout.setWidth("60px");
 		to.focus();
 
 		sendButton.addClickListener(click -> {
 
 			_from = username;
 			_to = to.getValue();
-		//	_cc = cc.getValue ()+ "\n";
 			_subject = subject.getValue() + "\n";
 			_body = body.getValue() + "\n";
 
 			boolean isUserValid = false, isPopUp=false, isErrorMessageChanged = false;
 
-
-			//isUserValid = _to.equalsIgnoreCase(user1.getUserName()) || _to.equalsIgnoreCase(user2.getUserName()) ? true : false;
-		//	isUserValid = _to.contains("user") ? true : false;
 			String errorMessage = "' " + _to + " ' is unreachable.";
 			if(_from.equalsIgnoreCase(Bob.getUserName())) {
 				if(_to.equalsIgnoreCase(Alice.getUserName())) {
@@ -481,9 +405,6 @@ public class MainView extends VerticalLayout {
 			}
 
 
-
-
-
 			if(isUserValid) {
 				byte[] aesKey = AES.generateKey(15).getBytes();
 
@@ -493,34 +414,29 @@ public class MainView extends VerticalLayout {
 				List<BigInteger>  RSAKeyEncryption = RSA.encryptMessage(
 						new String(aesKey), toUser.getE(), toUser.getN());//aesKey
 
-//				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), globalKey); this works!!!!!
-
 				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), aesKey);//aesKey
-
+				
 				BigInteger[] signature = fromUser.get_ElGamal().signature(_body.getBytes(), fromUser.getElGam_q(), fromUser.getElGam_a(), fromUser.getElGamalPrivateKey());
-				//test
-				System.out.println("AES: " + new String(bodyFieldEncrypted) );
-
+							
+				//print to console
+				System.out.println("\nOriginal message : \n" + _body );		
+				System.out.println("Encrypted message in AES : \n" + new String(bodyFieldEncrypted) );
+				System.out.println("\nAES Original Key : \n" + new String(aesKey));				
+				System.out.println("\nAES Encrypted Key with RSA :\n" + RSAKeyEncryption.toString());
+								
 				publisher.onNext(new ChatMessage(_from, _to , _cc,_subject, bodyFieldEncrypted, RSAKeyEncryption, signature));
 
-//				publisher.onNext(new ChatMessage(_from, _to , _cc,_subject, bodyFieldEncrypted));  this works!!!!!!!
-
-				//publisher.onNext(new ChatMessage(_from, _to, _cc,_subject,_body));
-				//clear fields
 				body.clear(); //clear the message field and get back the placeholder.
 				to.clear();
 			//	cc.clear();
 				subject.clear();
 				to.focus(); //focus on message field so the user can continue typing.
-
 			}
 		});
 
 		to.focus(); //focus on message field so the user can continue typing.
-		//add(inputLayout);
+	
 		return inputLayout;
 	}
-
-
 }
 
