@@ -10,15 +10,17 @@ public class ChatMessage {
 	private String from,to,cc,subject;
 	List<BigInteger> RSAKeyEncryption;
 	byte[] body;
-	
-	
-	public ChatMessage(String from, String to, String cc, String subject, byte[] body, List<BigInteger> RSAKeyEncryption) {
+	BigInteger[] ElGamalSignature;
+
+
+	public ChatMessage(String from, String to, String cc, String subject, byte[] body, List<BigInteger> RSAKeyEncryption, BigInteger[] ElGamalSignature) {
 		this.from = from;
 		this.to = to;
 		this.cc = cc;
 		this.subject = subject;
 		this.body = body;
 		this.RSAKeyEncryption = RSAKeyEncryption;
+		this.ElGamalSignature = ElGamalSignature;
 	}
 
 	public List<BigInteger> getRSAKeyEncryption() {
@@ -91,6 +93,14 @@ public class ChatMessage {
 
 	public void setTime(LocalDateTime time) {
 		this.time = time;
+	}
+
+	public BigInteger[] getElGamalSignature() {
+		return ElGamalSignature;
+	}
+
+	public void setElGamalSignature(BigInteger[] elGamalSignature) {
+		ElGamalSignature = elGamalSignature;
 	}
 
 }
