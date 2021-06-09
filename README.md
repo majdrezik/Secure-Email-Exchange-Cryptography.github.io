@@ -42,11 +42,11 @@ Project follow the Maven's directory layout structure:
   - `MainView.java` is a default view and entry point of the application
   - `User.java` is a Model Class of a user
 - Under the `srs/main/java/DAO` are located Application logic sources
-- `DAO/AES.java` is a service class with implementation of AES algorithm in ECB mode
-- `DAO/ElGamalSignatureInstance.java` is a service class with implementation of El Gamal algorithm of handling the digital signature
-- `DAO/IRSA.java` is an Interface of RSA algorithm
-- `DAO/RSAImpl.java`is a service class with implementation of RSA algorithm methods 
-- `DAO/Utils.java` is a service util class for RSAImpl 
+  - `DAO/AES.java` is a service class with implementation of AES algorithm in ECB mode
+  - `DAO/ElGamalSignatureInstance.java` is a service class with implementation of El Gamal algorithm of handling the digital signature
+  - `DAO/IRSA.java` is an Interface of RSA algorithm
+  - `DAO/RSAImpl.java`is a service class with implementation of RSA algorithm methods 
+  - `DAO/Utils.java` is a service util class for RSAImpl 
 - Under the `srs/test` are located test files
 - `src/main/resources` contains configuration files and static resources
 - The `frontend` directory in the root folder contains client-side dependencies and resource files
