@@ -32,7 +32,7 @@ If you want to run the application locally in the production mode, use `spring-b
 
 ## Project overview
 
-Project follow the Maven's [standard directory layout structure](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html):
+Project follow the Maven's directory layout structure:
 
 - Under the `srs/main/java/com.packagename.chat` are located Application sources
   - `Application.java` is a runnable Java application class and a starting point
