@@ -25,6 +25,8 @@ Clicking on the green run button will start the application.
 
 After the application has started, you can view your it at http://localhost:9999/ in your browser.
 
+(You can change the port from `application.properties` under `src/main/resources`. ( i.e. `src/main/resources/application.properties`)
+
 If you want to run the application locally in the production mode, use `spring-boot:run -Pproduction` command instead.
 
 
