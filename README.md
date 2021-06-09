@@ -34,7 +34,7 @@ If you want to run the application locally in the production mode, use `spring-b
 
 Project follow the Maven's [standard directory layout structure](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html):
 
-- Under the `srs/main/java` are located Application sources
+- Under the `srs/main/java/com.packagename.chat` are located Application sources
   - `Application.java` is a runnable Java application class and a starting point
   - `GreetService.java` is a Spring service class
   - `MainView.java` is a default view and entry point of the application
