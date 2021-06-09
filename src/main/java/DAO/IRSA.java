@@ -131,4 +131,11 @@ public interface IRSA extends Serializable{
      * @return decimal representation of a file
      */
     List<BigInteger> fileToDecimal(final String filePath);
+
+    
+    
+    
+	BigInteger encrypt(BigInteger bigInteger, BigInteger _e, BigInteger _n);
+
+	BigInteger decrypt(BigInteger encrypted, BigInteger _d, BigInteger _n);
 }

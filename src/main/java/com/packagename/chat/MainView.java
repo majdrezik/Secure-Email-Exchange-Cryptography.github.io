@@ -44,7 +44,9 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -79,15 +81,24 @@ public class MainView extends VerticalLayout {
 	private UnicastProcessor<ChatMessage> publisher;
 	private Flux<ChatMessage> messages;
     public String _from, _to, _cc, _subject, _body, username, time; // colorSentReceived;;
-	User user1 = new User("user1","123");
-	User user2 = new User("user2","123");
+	User Bob = new User("Bob","123");
+	User Alice = new User("ALice","123");
     HorizontalLayout mainLayout = new HorizontalLayout();
     byte[] globalKey = "This is a key".getBytes();
 	public RSAImpl RSA;
 	ElGamalSignatureInstance instance; //= new ElGamalSignatureInstance();
-	private AES AESInstance = new AES();
+//	private AES AESInstance = new AES();
     
-    //List<User> users = new ArrayList<>();
+	//Map each user to its 'e'. to get 'n', call getN()
+	public Map<User, BigInteger> RSApublicKeys = new HashMap<>();
+	User specUser;
+	User fromUser;
+	/*
+	 * 	p = new BigInteger("5700734181645378434561188374130529072194886062117");
+    q = new BigInteger("35894562752016259689151502540913447503526083241413");
+    e = new BigInteger("33445843524692047286771520482406772494816708076993");
+	 */
+
     
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////
@@ -104,18 +115,27 @@ public class MainView extends VerticalLayout {
     	addClassName("main-view");
     	H1 header = new H1("CryptoEmail");
     	header.getElement().getThemeList().add("dark");
+    	
 
-		BigInteger p;
-        BigInteger q;
-        BigInteger e;
-        
-		p = new BigInteger("5700734181645378434561188374130529072194886062117");
-        q = new BigInteger("35894562752016259689151502540913447503526083241413");
-        e = new BigInteger("33445843524692047286771520482406772494816708076993");
-    	RSA = new RSAImpl(p,q,e);
+    	
+
+    	Bob.setRSA(new BigInteger("5700734181645378434561188374130529072194886062117"),
+    			new BigInteger("35894562752016259689151502540913447503526083241413"),
+    			new BigInteger("33445843524692047286771520482406772494816708076993"));
+    	
+    	Alice.setRSA(new BigInteger("35894562752016259689151502540913447503526083241413"),
+    			new BigInteger("5700734181645378434561188374130529072194886062117"),
+    			new BigInteger("33445843524692047286771520482406772494816708076993"));
+    	
+    	
+    	RSApublicKeys.put(Bob, Bob.getE());
+    	RSApublicKeys.put(Alice, Alice.getE());
+    	
+    
     	
     	add(header);
     	askUsername();
+
     }
 
 	
@@ -135,13 +155,13 @@ public class MainView extends VerticalLayout {
 		username = e.getUsername();
 		String password = e.getPassword();
 		boolean isUserFound, isPasswordRight =false, isAuthenticated;
-	   isUserFound = username.equalsIgnoreCase(user1.getUserName()) || username.equalsIgnoreCase(user2.getUserName()) ? true : false;
+	   isUserFound = username.equalsIgnoreCase(Bob.getUserName()) || username.equalsIgnoreCase(Alice.getUserName()) ? true : false;
 	   
 	   if(isUserFound) {
-		   if(username.equalsIgnoreCase(user1.getUserName())) {
-			   isPasswordRight = password.equalsIgnoreCase(user1.getPassword()) ? true : false;
+		   if(username.equalsIgnoreCase(Bob.getUserName())) {
+			   isPasswordRight = password.equalsIgnoreCase(Bob.getPassword()) ? true : false;
 		   } else {
-			   isPasswordRight = password.equalsIgnoreCase(user2.getPassword()) ? true : false;
+			   isPasswordRight = password.equalsIgnoreCase(Alice.getPassword()) ? true : false;
 		   }
 	   }
 	   isAuthenticated = isUserFound && isPasswordRight;
@@ -157,7 +177,10 @@ public class MainView extends VerticalLayout {
 				e1.printStackTrace();
 			}
 			remove(progressBar);
+			getSpecUser();
 	        showChat();
+	    	
+	    	
 	    } else {
 	        component.setError(true);
 	    }
@@ -219,6 +242,16 @@ public class MainView extends VerticalLayout {
 //    }
     
     
+    public User getOtherUser(User user) {
+    	return user.getUserName().equals(Bob.getUserName()) ? Alice : Bob;
+    }
+    
+    
+	public User getSpecUser() {
+		return (specUser = username.equals(Bob.getUserName()) ? Bob : Alice);
+	}
+    
+    
 	private void showChat() {
 		
 		//HorizontalLayout inputLayout = new HorizontalLayout();
@@ -238,10 +271,12 @@ public class MainView extends VerticalLayout {
 
 		VerticalLayout vertical = new VerticalLayout();
 
+
 		
 		expand(messageList); 
 		
-		
+		RSA = new RSAImpl(specUser.getP(), specUser.getQ(), specUser.getE());
+
 		
 		/*
 			messages.subscribe(message -> {
@@ -266,33 +301,39 @@ public class MainView extends VerticalLayout {
 				*/
 		
 		
-		
+	
 		
 				
 		messages.subscribe(message -> {
 			getUI().ifPresent(ui -> 
 				ui.access(()->{
 					//The thing that takes in the runnable
-					messageList.add(
-							
-						new Html("<div class=\"card\" style=\"width: 18rem;\">\r\n" + 							  
-								"							  <div class=\"card-body\">\r\n" + 
-								"								<p class=\"card-title\" style= \"padding-left:20px;border-style: outset;\">" + "<i><b> "+  getSentOrReceived(message) + "</b></i>" + "</p>"+
-								"								<p class=\"card-text\" style= \"padding-left:20px\"> " + getTime() + "</p>" + 
-								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getSubject() + "</h4>\r\n"  +
-								"								 <p class=\"card-text\"style= \"padding-left:20px\">From: " + getFromOnGUI(message) + "</p>\r\n" + 
-								"							    <p class=\"card-text\"style= \"padding-left:20px\">To: " + getToOnGUI(message)  + "</p>\r\n" + 
-								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + new String(AESInstance.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption())).getBytes())) + "</h4>\r\n"  +
-								"							  </div>\r\n" + 
-								"							</div>")
-			
-					);
-					Paragraph p = new Paragraph();
-					p.getStyle().set("borderBottom", "dotted 1px black");
-					
-					messageList.add(p);
-					messageList.add(new Html("<br>"));
-				}));
+					User recievedUser = message.getTo().equals(Bob.getUserName()) ? Bob : Alice;
+
+					if(!message.equals(null))
+						messageList.add(
+								
+							new Html("<div class=\"card\" style=\"width: 18rem;\">\r\n" + 							  
+									"							  <div class=\"card-body\">\r\n" + 
+									"								<p class=\"card-title\" style= \"padding-left:20px;border-style: outset;\">" + "<i><b> "+  getSentOrReceived(message) + "</b></i>" + "</p>"+
+									"								<p class=\"card-text\" style= \"padding-left:20px\"> " + getTime() + "</p>" + 
+									"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + message.getSubject() + "</h4>\r\n"  +
+									"								 <p class=\"card-text\"style= \"padding-left:20px\">From: " + getFromOnGUI(message) + "</p>\r\n" + 
+									"							    <p class=\"card-text\"style= \"padding-left:20px\">To: " + getToOnGUI(message)  + "</p>\r\n" + 
+	//								"							    <h4 class=\"card-title\" style= \"padding-left:20px\">" + (specUser.getUserName().equals(message.getFrom()) ? _body : new String(AES.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption(), getOtherUser(specUser).getD(), getOtherUser(specUser).getN() )).getBytes()))) + "</h4>\r\n"  +
+	"														        <h4 class=\"card-title\" style= \"padding-left:20px\">" + ((getSentOrReceived(message).equals("SENT")) ? _body : new String(AES.ecb_decrypt(message.getBody(), Utils.bigIntegerToString(RSA.decrypt(message.getRSAKeyEncryption(),  recievedUser.getD(), recievedUser.getN() )).getBytes()))) + "</h4>\r\n"  +
+	
+									"							  </div>\r\n" + 
+									"							</div>"
+									)
+				
+						);
+						Paragraph p = new Paragraph();
+						p.getStyle().set("borderBottom", "dotted 1px black");
+						
+						messageList.add(p);
+						messageList.add(new Html("<br>"));
+					}));
 			});
 				
 		logOutButton.addClickListener(click -> {
@@ -383,18 +424,18 @@ public class MainView extends VerticalLayout {
 			//isUserValid = _to.equalsIgnoreCase(user1.getUserName()) || _to.equalsIgnoreCase(user2.getUserName()) ? true : false;
 		//	isUserValid = _to.contains("user") ? true : false;
 			String errorMessage = "' " + _to + " ' is unreachable.";
-			if(_from.equalsIgnoreCase(user1.getUserName())) {
-				if(_to.equalsIgnoreCase(user2.getUserName())) {
+			if(_from.equalsIgnoreCase(Bob.getUserName())) {
+				if(_to.equalsIgnoreCase(Alice.getUserName())) {
 					isUserValid = true;
 				}else if( !_to.equals("") && !_to.isEmpty() && !_to.equals(" ")){
-					errorMessage += "You can only send to: ' " + user2.getUserName() + " '. Close me with the esc-key or an outside click";	
+					errorMessage += "You can only send to: ' " + Alice.getUserName() + " '. Close me with the esc-key or an outside click";	
 					isErrorMessageChanged = true;
 				}
-			}else if(_from.equalsIgnoreCase(user2.getUserName())) {
-					if(_to.equalsIgnoreCase(user1.getUserName())) {
+			}else if(_from.equalsIgnoreCase(Alice.getUserName())) {
+					if(_to.equalsIgnoreCase(Bob.getUserName())) {
 						isUserValid = true;
 					} else if( !_to.equals("") && !_to.isEmpty() && !_to.equals(" ")){
-						errorMessage += "You can only send to: '" + user1.getUserName() + " '. Close me with the esc-key or an outside click";
+						errorMessage += "You can only send to: '" + Bob.getUserName() + " '. Close me with the esc-key or an outside click";
 						isErrorMessageChanged = true;
 					}
 			}
@@ -420,9 +461,15 @@ public class MainView extends VerticalLayout {
 			
 			
 			
+			
 			if(isUserValid) {
-				byte[] aesKey = AESInstance.generateKey(15).getBytes();
-				List<BigInteger>  RSAKeyEncryption = RSA.encryptMessage(new String(aesKey));//aesKey
+				byte[] aesKey = AES.generateKey(15).getBytes();
+				
+				fromUser = username.equals(Bob.getUserName())? Bob : Alice;
+				User toUser = getOtherUser(fromUser);
+
+				List<BigInteger>  RSAKeyEncryption = RSA.encryptMessage(
+						new String(aesKey), toUser.getE(), toUser.getN());//aesKey
 				
 //				byte[] bodyFieldEncrypted = AES.ecb_encrypt(_body.getBytes(), globalKey); this works!!!!!
 				

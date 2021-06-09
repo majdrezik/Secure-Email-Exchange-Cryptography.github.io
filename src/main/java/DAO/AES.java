@@ -369,7 +369,7 @@ public class AES {
 	}
 	
 	
-	public String generateKey(int length) {
+	public static String generateKey(int length) {
 		Random random = new Random();
 		Random random2 = new Random();
 		String capitalLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

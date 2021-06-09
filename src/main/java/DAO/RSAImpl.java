@@ -25,6 +25,8 @@ public class RSAImpl implements IRSA{
     private BigInteger q; //prime
     private final BigInteger phi;// obtained with phi = (p-1)*(q-1)
 
+    
+    
     public RSAImpl(BigInteger p, BigInteger q, BigInteger e) {
 
         phi = (p.subtract(ONE)).multiply(q.subtract(ONE)); //phi = (p-1)*(q-1) 
@@ -34,21 +36,35 @@ public class RSAImpl implements IRSA{
         modulus = p.multiply(q);
         privateKey = e.modInverse(phi);//d = e^-1 mod phi, private key is obtained with the multiplative inverse of 'e' mod 'phi'
     }
+    
+    
+//    
+//    public RSAImpl(BigInteger n) {
+//    	this.n = n;
+//    }
+    
 
     @Override
-    public BigInteger encrypt(BigInteger bigInteger) {
-        if (isModulusSmallerThanMessage(bigInteger)) {	//if (bigInteger)modulus is smaller than (bigInteger)
+    public BigInteger encrypt(BigInteger bigInteger, BigInteger _e, BigInteger _n) {
+        if (isModulusSmallerThanMessage(bigInteger,modulus)) {	//if (bigInteger)modulus is smaller than (bigInteger)
             throw new IllegalArgumentException("Could not encrypt - message bytes are greater than modulus");
         }
-        return bigInteger.modPow(e, modulus);
+        return bigInteger.modPow(_e, _n);
     }
 
-    public List<BigInteger> encryptMessage(String message) {
+    
+    // (_e,_n) is the public key of the recipient
+    public List<BigInteger> encryptMessage(String message, BigInteger e, BigInteger n) {
         List<BigInteger> toEncrypt = new ArrayList<BigInteger>();
         BigInteger messageBytes = new BigInteger(message.getBytes());
-        if (isModulusSmallerThanMessage(messageBytes)) {
+        if (isModulusSmallerThanMessage(messageBytes,modulus)) {
             toEncrypt = getValidEncryptionBlocks(Utils.splitMessages(new ArrayList<String>() {
-                {
+                /**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				{
                     add(message);
                 }
             }));
@@ -57,7 +73,7 @@ public class RSAImpl implements IRSA{
         }
         List<BigInteger> encrypted = new ArrayList<BigInteger>();
         for (BigInteger bigInteger : toEncrypt) {
-            encrypted.add(this.encrypt(bigInteger));
+            encrypted.add(this.encrypt(bigInteger, e , n));
         }
         return encrypted;
     }
@@ -100,27 +116,28 @@ public class RSAImpl implements IRSA{
     }
 
     @Override
-    public BigInteger decrypt(BigInteger encrypted) {
-        return encrypted.modPow(privateKey, modulus);
+    public BigInteger decrypt(BigInteger encrypted , BigInteger _d , BigInteger _n) {
+        return encrypted.modPow(_d , _n);
     }
 
-    public List<BigInteger> decrypt(List<BigInteger> encryption) {
+    public List<BigInteger> decrypt(List<BigInteger> encryption , BigInteger _d , BigInteger _n) {
         List<BigInteger> decryption = new ArrayList<BigInteger>();
         for (BigInteger bigInteger : encryption) {
-            decryption.add(this.decrypt(bigInteger));
+            decryption.add(this.decrypt(bigInteger , _d , _n));
         }
         return decryption;
     }
 
-    @Override
-    public BigInteger sign(BigInteger bigInteger) {
-        return bigInteger.modPow(privateKey, modulus);
-    }
+//    
+//    @Override
+//    public BigInteger sign(BigInteger bigInteger) {
+//        return bigInteger.modPow(privateKey, modulus);
+//    }
 
     public List<BigInteger> signMessage(final String message) {
         List<BigInteger> toSign = new ArrayList<BigInteger>();
         BigInteger messageBytes = new BigInteger(message.getBytes());
-        if (isModulusSmallerThanMessage(messageBytes)) {
+        if (isModulusSmallerThanMessage(messageBytes,modulus)) {
             toSign = getValidEncryptionBlocks(Utils.splitMessages(new ArrayList<String>() {
                 {
                     add(message);
@@ -171,10 +188,10 @@ public class RSAImpl implements IRSA{
         return signedLines;
     }
 
-    @Override
-    public BigInteger Verify(BigInteger signedMessage) {
-        return signedMessage.modPow(e, modulus);
-    }
+//    @Override
+//    public BigInteger Verify(BigInteger signedMessage) {
+//        return signedMessage.modPow(e, modulus);
+//    }
 
     public List<BigInteger> verify(List<BigInteger> signedMessages) {
         List<BigInteger> verification = new ArrayList<BigInteger>();
@@ -200,7 +217,7 @@ public class RSAImpl implements IRSA{
     private List<BigInteger> getValidEncryptionBlocks(List<String> messages) {
         List<BigInteger> validBlocks = new ArrayList<BigInteger>();
         BigInteger messageBytes = new BigInteger(messages.get(0).getBytes());
-        if (!isModulusSmallerThanMessage(messageBytes)) {
+        if (!isModulusSmallerThanMessage(messageBytes,modulus)) {
             for (String msg : messages) {
                 validBlocks.add(new BigInteger(msg.getBytes()));
             }
@@ -215,7 +232,7 @@ public class RSAImpl implements IRSA{
     public List<BigInteger> messageToDecimal(final String message) {
         List<BigInteger> toDecimal = new ArrayList<BigInteger>();
         BigInteger messageBytes = new BigInteger(message.getBytes());
-        if (isModulusSmallerThanMessage(messageBytes)) {
+        if (isModulusSmallerThanMessage(messageBytes,modulus)) {
             toDecimal = getValidEncryptionBlocks(Utils.splitMessages(new ArrayList<String>() {
                 {
                     add(message);
@@ -266,40 +283,82 @@ public class RSAImpl implements IRSA{
         return decimalLines;
     }
 
-    private boolean isModulusSmallerThanMessage(BigInteger messageBytes) {
-        return modulus.compareTo(messageBytes) == -1;
+    private boolean isModulusSmallerThanMessage(BigInteger messageBytes, BigInteger n) {
+        return n.compareTo(messageBytes) == -1;
     }
 
     @Override
     public String toString() {
         String s = "";
-        s += "p                     = " + p + "\n";
-        s += "q                     = " + q + "\n";
-        s += "e                     = " + e + "\n";
-        s += "private Key              = " + privateKey + "\n";
-        s += "modulus (p*q)             = " + modulus;
+//        s += "p                     = " + p + "\n";
+//        s += "q                     = " + q + "\n";
+//        s += "e                     = " + e + "\n";
+//        s += "private Key              = " + privateKey + "\n";
+//        s += "modulus (p*q)             = " + modulus;
         return s;
     }
+
+
+	@Override
+	public BigInteger encrypt(BigInteger bigInteger) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public List<BigInteger> encryptMessage(String message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public BigInteger decrypt(BigInteger encrypted) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public List<BigInteger> decrypt(List<BigInteger> encryption) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public BigInteger sign(BigInteger bigInteger) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public BigInteger Verify(BigInteger signedMessage) {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
-    public static void main(String[] args) {
-    	 BigInteger p;
-         BigInteger q;
-         BigInteger e;
-         p = new BigInteger("5700734181645378434561188374130529072194886062117");
-         q = new BigInteger("35894562752016259689151502540913447503526083241413");
-         e = new BigInteger("33445843524692047286771520482406772494816708076993");
-         //String message = "This is a test This is a test This is a test";
-         String message = "MMMMMMMMMMMMMMMMMMMMMMMMMMMM";
-         RSAImpl instance = new RSAImpl(p, q, e);
-         List<BigInteger> encryption;
-         encryption = instance.encryptMessage(message);
-         System.out.println("Encrypt: " + encryption);
-         System.out.println("Encrypt: " + Utils.bigIntegerToString(encryption));
-         List<BigInteger> decrypt = instance.decrypt(encryption);
-         System.out.println("Decrypt: " + Utils.bigIntegerSum(decrypt));
-         System.out.println("Decrypt: " + Utils.bigIntegerToString(decrypt));
-        
-    }
+//    public static void main(String[] args) {
+//    	 BigInteger p;
+//         BigInteger q;
+//         BigInteger e;
+//         p = new BigInteger("5700734181645378434561188374130529072194886062117");
+//         q = new BigInteger("35894562752016259689151502540913447503526083241413");
+//         e = new BigInteger("33445843524692047286771520482406772494816708076993");
+//         //String message = "This is a test This is a test This is a test";
+//         String message = "MMMMMMMMMMMMMMMMMMMMMMMMMMMM";
+//         RSAImpl instance = new RSAImpl(p, q, e);
+//         List<BigInteger> encryption;
+//         encryption = instance.encryptMessage(message);
+//         System.out.println("Encrypt: " + encryption);
+//         System.out.println("Encrypt: " + Utils.bigIntegerToString(encryption));
+//         List<BigInteger> decrypt = instance.decrypt(encryption);
+//         System.out.println("Decrypt: " + Utils.bigIntegerSum(decrypt));
+//         System.out.println("Decrypt: " + Utils.bigIntegerToString(decrypt));
+//        
+//    }
     
     
     
