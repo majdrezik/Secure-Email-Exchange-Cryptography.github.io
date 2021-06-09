@@ -62,6 +62,9 @@ If you run application from a command line, remember to prepend a `mvn` to the c
 ## Example
 
 **This is the login page:**
+**There are 2 users in the system**
+**user #1 : username: Alice , password: 123**
+**user #2 : username: Bob , password: 123**
 
 ![](Pics/Login.PNG)
 
