@@ -76,17 +76,21 @@ If you run application from a command line, remember to prepend a `mvn` to the c
 ## Example
 
 **This is the login page:**
+
 ![](Pics/Login.PNG)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-##
+
 
 **After sending the message from Alice to Bob, this is what will be seen on Alice's screen:**
+
 ![](Pics/Main%20View.PNG) 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-##
+
 
 **After sending the message from Alice to Bob, this is what will be seen on Bob's screen:**
+
 ![](Pics/Bob.PNG)
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
