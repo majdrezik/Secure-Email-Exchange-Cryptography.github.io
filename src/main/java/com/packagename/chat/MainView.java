@@ -68,7 +68,7 @@ public class MainView extends VerticalLayout {
 	private Flux<ChatMessage> messages;
     public String _from, _to, _cc, _subject, _body, username, time;
 	User Bob = new User("Bob","123");
-	User Alice = new User("ALice","123");
+	User Alice = new User("Alice","123");
     HorizontalLayout mainLayout = new HorizontalLayout();
     byte[] globalKey = "This is a key".getBytes();
 	public RSAImpl RSA;
