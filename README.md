@@ -82,7 +82,7 @@ If you run application from a command line, remember to prepend a `mvn` to the c
 
 
 **After sending the message from Alice to Bob, this is what will be seen on Alice's screen:**
-![](Pics/Main View.PNG) 
+![](Pics/Main%20View.PNG) 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
